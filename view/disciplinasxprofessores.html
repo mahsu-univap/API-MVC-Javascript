@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disciplinas</title>
+</head>
+
+<body>
+    <div>
+        <input type="text" id="txtId" disabled placeholder="ID"><br>
+        <input type="text" id="txtCurso" placeholder="Curso"><br>
+        <input type="text" id="txtCargaHoraria" placeholder="Carga horária"><br>
+        <input type="text" id="txtAnoLetivo" placeholder="Ano letivo"><br>
+        <select id="cboDisciplinas"></select> Selecionar Disciplina<br>
+        <select id="cboProfessores"></select> Selecionar Professor<br>
+        <button id="btnNovo">Registrar</button>
+        <br><br><button id="btnAtualizar">Atualizar</button><br><br>
+
+    </div>
+
+    <input type="text" id="txtFiltro" placeholder="Pesquisar"><br><br>
+    <table border="1" id="tbDisc">
+        <th>idDiscProf</th>
+        <th>curso</th>
+        <th>cargahoraria</th>
+        <th>anoletivo</th>
+        <th>coddisciplinas</th>
+        <th>codprofessores</th>
+        <th>excluir</th>
+        <th>selecionar</th>
+
+    </table>
+    <script src="js/validacao.js"></script>
+
+    <!--Código em js-->
+    <script>
+        const obj = validar()
+        const token = localStorage.getItem("token")
+        const uri = "/discprof"
+        const txtFiltro = document.getElementById("txtFiltro")
+        const txtId = document.getElementById("txtId")
+        const txtCurso = document.getElementById("txtCurso")
+        const txtAnoLetivo = document.getElementById("txtAnoLetivo")
+        const txtCargaHoraria = document.getElementById("txtCargaHoraria")
+        const cboDisciplinas = document.getElementById("cboDisciplinas")
+        const cboProfessores = document.getElementById("cboProfessores")
+        const tbDisc = document.getElementById("tbDisc")
+        const btnNovo = document.getElementById("btnNovo")
+        const btnAtualizar = document.getElementById("btnAtualizar")
+        //pega os dados do corpo da requisisção (POST)
+        let JSON_DISCXPROF = []
+        let JSON_DISCIPLINAS = []
+        let JSON_PROFESSORES = []
+        getDiscProf()
+        getDisciplinas()
+        getProfessores()
+        comboDisc()
+        comboProf()
+
+        btnAtualizar.onclick = atualizar
+
+        function atualizar() {
+            const curso = Number(txtCurso.value);
+            const cargahoraria = Number(txtCargaHoraria.value);
+            const anoletivo = Number(txtAnoLetivo.value);
+            const prof = Number(cboProfessores.value);
+            const disc = Number(cboDisciplinas.value);
+            const id = txtId.value
+            const novaDisc = {
+                curso: curso,
+                anoletivo: anoletivo,
+                cargahoraria: cargahoraria,
+                coddisciplinas: disc,
+                codprofessores: prof
+            }
+            console.log("ID:", id);
+            console.log("Nova Disciplina:", novaDisc);
+            putDiscProf(novaDisc, id)
+        }
+
+        btnNovo.onclick = registrar
+
+        function registrar() {
+            const curso = txtCurso.value
+            const cargahoraria = txtCargaHoraria.value
+            const anoletivo = txtAnoLetivo.value
+            const prof = cboProfessores.value
+            const disc = cboDisciplinas.value
+            const novaDisc = {
+                curso: curso,
+                cargahoraria: cargahoraria,
+                anoletivo: anoletivo,
+                coddisciplinas: disc,
+                codprofessores: prof
+
+            }
+            postDiscProf(novaDisc)
+        }
+
+        txtFiltro.onkeyup = filtrar
+
+        function filtrar() {
+            let filtro = txtFiltro.value
+            construirTabela(filtro)
+        }
+
+        function getDiscProf() {
+            const requisicao = fetch(uri, {
+                method: 'GET',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    JSON_DISCXPROF = obj.dados_lidos
+                    localStorage.setItem("token", obj.TokenJWT)
+                    construirTabela()
+                } else {
+                    alert("Erro ao encontrar relações.")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_DISCXPROF)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function postDiscProf(novaDisc) {
+            const jsonDisc = JSON.stringify(novaDisc)
+
+            const requisicao = fetch(uri, {
+                method: 'POST',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+                body: jsonDisc
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    localStorage.setItem("token", obj.TokenJWT)
+                    getDiscProf()
+
+                } else {
+                    alert("Erro ao registrar.")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_DISCIPLINAS)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function putDiscProf(novaDisc, id) {
+            const jsonDisc = JSON.stringify(novaDisc)
+            console.log('aqui!!!')
+            console.log(jsonDisc)
+            const rota = uri + "/" + id
+            console.log(rota)
+            const requisicao = fetch(rota, {
+                method: 'PUT',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+                body: jsonDisc
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    localStorage.setItem("token", obj.TokenJWT)
+                    getDiscProf()
+
+                } else {
+                    alert("Erro ao atualizar.")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_DISCIPLINAS)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function deleteDiscProf(id) {
+
+            const rota = uri + "/" + id
+            const requisicao = fetch(rota, {
+                method: 'DELETE',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    localStorage.setItem("token", obj.TokenJWT)
+                    alert("Excluído com sucesso!")
+                    getDiscProf()
+
+                } else {
+                    alert("Erro ao deletar.")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_DISCIPLINAS)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function limparTabela() {
+            let qtdlinhas = tbDisc.rows.length
+            for (let i = 1; i < qtdlinhas; i++) {
+                tbDisc.deleteRow(1)
+            }
+
+        }
+
+        function construirTabela(filtro) {
+            limparTabela()
+            for (let disc of JSON_DISCXPROF) {
+                if (filtro != null) {
+                    let curso = disc.curso.toLowerCase()
+                    filtro = filtro.toLowerCase()
+
+                    if (curso.includes(filtro) == false) {
+                        continue
+                    }
+
+                }
+
+                const linha = document.createElement("tr")
+                const colunaidDiscProf = document.createElement("td")
+                const colunaCurso = document.createElement("td")
+                const colunaCargaHoraria = document.createElement("td")
+                const colunaAnoLetivo = document.createElement("td")
+                const colunaCodDisciplinas = document.createElement("td")
+                const colunaCodProfessores = document.createElement("td")
+                const colunaExcluir = document.createElement("td")
+                const colunaSelecionar = document.createElement("td")
+
+                const btnExcluir = document.createElement("button")
+                btnExcluir.append(document.createTextNode("EXCLUIR"))
+                btnExcluir.onclick = function () {
+                    const id = disc.idDiscProf
+                    const confirma = confirm("ATENÇÃO! Deseja excluir? Essa ação é permanente.")
+                    if (confirma == true) {
+                        deleteDiscProf(id)
+                    } else {
+                        alert('Ação interrompida.')
+                    }
+
+                }
+                const btnSelecionar = document.createElement("button")
+                btnSelecionar.append(document.createTextNode("SELECIONAR"))
+                btnSelecionar.onclick = function () {
+                    txtId.value = disc.idDiscProf
+                    txtCurso.value = disc.curso
+                    txtCargaHoraria.value = disc.cargahoraria
+                    txtAnoLetivo.value = disc.anoletivo
+                    cboDisciplinas.value = disc.codigodisc
+                    cboProfessores.value = disc.registro
+                }
+
+
+                colunaidDiscProf.append(document.createTextNode(disc.idDiscProf))
+                colunaCurso.append(document.createTextNode(disc.curso))
+                colunaCargaHoraria.append(document.createTextNode(disc.cargahoraria))
+                colunaAnoLetivo.append(document.createTextNode(disc.anoletivo))
+                colunaCodDisciplinas.append(document.createTextNode(disc.coddisciplinas))
+                colunaCodProfessores.append(document.createTextNode(disc.codprofessores))
+                colunaExcluir.append(btnExcluir)
+                colunaSelecionar.append(btnSelecionar)
+
+                linha.appendChild(colunaidDiscProf)
+                linha.appendChild(colunaCurso)
+                linha.appendChild(colunaCargaHoraria)
+                linha.appendChild(colunaAnoLetivo)
+                linha.appendChild(colunaCodDisciplinas)
+                linha.appendChild(colunaCodProfessores)
+                linha.appendChild(colunaExcluir)
+                linha.appendChild(colunaSelecionar)
+
+                tbDisc.appendChild(linha)
+
+            }
+
+        }
+
+        function getDisciplinas() {
+            const rotadisc = "/disciplinas"
+            const requisicao = fetch(rotadisc, {
+                method: 'GET',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    JSON_DISCIPLINAS = obj.dados_lidos
+                    comboDisc()
+                    console.log(JSON_DISCIPLINAS)
+                    localStorage.setItem("token", obj.TokenJWT)
+
+                } else {
+                    alert("Erro ao encontrar disciplinas.")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_DISCIPLINAS)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function comboDisc() {
+            console.log(JSON_DISCIPLINAS)
+            for (let d of JSON_DISCIPLINAS) {
+                const nomedisc = d.nomedisc;
+                const codigodisc = d.codigodisc;
+                const option = document.createElement("option");
+                option.value = codigodisc;
+                option.text = nomedisc;
+                cboDisciplinas.appendChild(option);
+            }
+
+        }
+
+        function getProfessores() {
+            const rotaprof = "/professores"
+            const requisicao = fetch(rotaprof, {
+                method: 'GET',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    JSON_PROFESSORES = obj.dados_lidos
+                    comboProf()
+                    console.log(JSON_PROFESSORES)
+                    localStorage.setItem("token", obj.TokenJWT)
+
+                } else {
+                    alert("Erro ao encontrar professor.")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_PROFESSORES)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function comboProf() {
+            console.log(JSON_PROFESSORES)
+            for (let p of JSON_PROFESSORES) {
+                const nomeprof = p.nomeprof;
+                const registro = p.registro;
+                const option = document.createElement("option");
+                option.value = registro;
+                option.text = nomeprof;
+                cboProfessores.appendChild(option);
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>

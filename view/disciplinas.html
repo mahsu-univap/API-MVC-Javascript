@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disciplinas</title>
+</head>
+
+<body>
+    <div>
+        <input type="text" id="txtId" disabled placeholder="ID"><br>
+        <input type="text" id="txtDisc" placeholder="Disciplina">
+        <button id="btnNovo">Registrar</button>
+        <br><br><button id="btnAtualizar">Atualizar</button><br><br>
+
+    </div>
+
+    <input type="text" id="txtFiltro" placeholder="Pesquisar"><br><br>
+    <table border="1" id="tbDisc">
+        <th>codigodisc</th>
+        <th>nomedisc</th>
+        <th>excluir</th>
+        <th>selecionar</th>
+        <!--<th>selecionar</th>-->
+
+    </table>
+    <script src="js/validacao.js"></script>
+
+    <!--Código em js-->
+    <script>
+        const obj = validar()
+        const token = localStorage.getItem("token")
+        const uri = "/disciplinas"
+        const txtFiltro = document.getElementById("txtFiltro")
+        const txtId = document.getElementById("txtId")
+        const txtDisc = document.getElementById("txtDisc")
+        const tbDisc = document.getElementById("tbDisc")
+        const btnNovo = document.getElementById("btnNovo")
+        const btnAtualizar = document.getElementById("btnAtualizar")
+        //pega os dados do corpo da requisisção (POST)
+        let JSON_DISCIPLINAS = []
+        getDisciplinas()
+
+        btnAtualizar.onclick = atualizar
+
+        function atualizar() {
+            const nome = txtDisc.value
+            const id = txtId.value
+            const novaDisc = {
+                nomedisc: nome
+            }
+
+            putDisciplinas(novaDisc, id)
+        }
+
+        btnNovo.onclick = registrar
+
+        function registrar() {
+            const nome = txtDisc.value
+            const novaDisc = {
+                nomedisc: nome
+            }
+
+            postDisciplinas(novaDisc)
+        }
+
+        txtFiltro.onkeyup = filtrar
+
+        function filtrar() {
+            let filtro = txtFiltro.value
+            construirTabela(filtro)
+        }
+
+        function getDisciplinas() {
+            const requisicao = fetch(uri, {
+                method: 'GET',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    JSON_DISCIPLINAS = obj.dados_lidos
+                    localStorage.setItem("token", obj.TokenJWT)
+                    construirTabela()
+                } else {
+                    alert("Erro ao encontrar disciplinas.")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_DISCIPLINAS)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function postDisciplinas(novaDisc) {
+            const jsonDisc = JSON.stringify(novaDisc)
+
+            const requisicao = fetch(uri, {
+                method: 'POST',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+                body: jsonDisc
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    localStorage.setItem("token", obj.TokenJWT)
+                    getDisciplinas()
+
+                } else {
+                    alert("Erro ao registrar.")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_DISCIPLINAS)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function putDisciplinas(novaDisc, id) {
+            const jsonDisc = JSON.stringify(novaDisc)
+            const rota = uri + "/" + id
+            const requisicao = fetch(rota, {
+                method: 'PUT',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+                body: jsonDisc
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    localStorage.setItem("token", obj.TokenJWT)
+                    getDisciplinas()
+
+                } else {
+                    alert("Erro ao atualizar.")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_DISCIPLINAS)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function deleteDisciplinas(id) {
+
+            const rota = uri + "/" + id
+            const requisicao = fetch(rota, {
+                method: 'DELETE',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    localStorage.setItem("token", obj.TokenJWT)
+                    alert("Excluído com sucesso!")
+                    getDisciplinas()
+
+                } else {
+                    alert("Erro ao deletar. Disciplina em relacionamento")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_DISCIPLINAS)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function limparTabela() {
+            let qtdlinhas = tbDisc.rows.length
+            for (let i = 1; i < qtdlinhas; i++) {
+                tbDisc.deleteRow(1)
+            }
+
+        }
+
+        function construirTabela(filtro) {
+            limparTabela()
+            for (let disc of JSON_DISCIPLINAS) {
+                if (filtro != null) {
+                    let nomedisc = disc.nomedisc.toLowerCase()
+                    filtro = filtro.toLowerCase()
+
+                    if (nomedisc.includes(filtro) == false) {
+                        continue
+                    }
+
+                }
+
+                const linha = document.createElement("tr")
+                const colunaCodigodisc = document.createElement("td")
+                const colunaNomedisc = document.createElement("td")
+                const colunaExcluir = document.createElement("td")
+                const colunaSelecionar = document.createElement("td")
+
+                const btnExcluir = document.createElement("button")
+                btnExcluir.append(document.createTextNode("EXCLUIR"))
+                btnExcluir.onclick = function () {
+                    const id = disc.codigodisc
+                    const confirma = confirm("ATENÇÃO! Deseja excluir? Essa ação é permanente.")
+                    if (confirma == true) {
+                        deleteDisciplinas(id)
+                    } else {
+                        alert('Ação interrompida.')
+                    }
+
+                }
+                const btnSelecionar = document.createElement("button")
+                btnSelecionar.append(document.createTextNode("SELECIONAR"))
+                btnSelecionar.onclick = function () {
+                    txtId.value = disc.codigodisc
+                    txtDisc.value = disc.nomedisc
+                }
+
+
+                colunaCodigodisc.append(document.createTextNode(disc.codigodisc))
+                colunaNomedisc.append(document.createTextNode(disc.nomedisc))
+                colunaExcluir.append(btnExcluir)
+                colunaSelecionar.append(btnSelecionar)
+
+                linha.appendChild(colunaCodigodisc)
+                linha.appendChild(colunaNomedisc)
+                linha.appendChild(colunaExcluir)
+                linha.appendChild(colunaSelecionar)
+
+                tbDisc.appendChild(linha)
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>

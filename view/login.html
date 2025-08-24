@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-sacle=1.0">
+    <title>Login</title>
+</head>
+
+<body>
+    <input type="text" id="txtEmail" value="mha.suterio@gmail.com"><br>
+    <input type="password" id="txtSenha" value="123"><br><br>
+    <button id="btnLogin">LOGIN</button>
+    <div id="divResposta"></div>
+    <script>
+        const uri='/login'
+        const btnLogin = document.getElementById("btnLogin");
+        const txtEmail = document.getElementById("txtEmail");
+        const txtSenha = document.getElementById("txtSenha");
+        const divResposta = document.getElementById("divResposta");
+
+        btnLogin.onclick = login
+
+        function login() {
+            const email = txtEmail.value;
+            const senha = txtSenha.value;
+            const obj_json = {
+                
+                email: email,
+                senha: senha
+            }
+        
+            verificarLogin(obj_json)
+
+        }
+
+        function verificarLogin(obj_json){
+
+            const texto_json = JSON.stringify(obj_json)
+            const requisicao = fetch(uri,{
+                method:'POST',
+                headers:{
+                    "Accept":"application/json",
+                    "Content-type":"application/json",
+                    "Authorization":""
+                },
+                body:texto_json
+
+            })
+            requisicao.then((response)=>{return response.text();}).then((jsonResposta)=>{
+                const obj = JSON.parse(jsonResposta)
+                if(obj.status==true){
+                    alert('Login validado com sucesso! Seja Bem-vindo(a)🎀')
+                    localStorage.setItem("payload",JSON.stringify(obj.dados_de_login))
+                    localStorage.setItem("token",obj.TokenJWT_gerado)
+                    window.location="painel.html"
+                }else{
+                    alert("Login inválido.")
+                }
+
+                console.log(jsonResposta)
+            })
+            requisicao.catch((erro)=>{
+                console.log(erro)
+            })
+        }
+
+    </script>
+
+</body>
+
+</html>

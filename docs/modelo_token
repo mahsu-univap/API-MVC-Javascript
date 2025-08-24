@@ -1,0 +1,20 @@
+const TokenJWT = require("../../model/TokenJWT")
+
+const auth = request.headers.authorization
+const jwt = new TokenJWT()
+const validou = jwt.validar(auth)
+
+if(validou.status==true){
+
+    TokenJWT:jwt.gerar(validou.payload)
+
+}else{
+    const resposta = {
+        status:"false",
+        msg:"Token inválido",
+        cod:"500",
+    }  
+    response.status(500).send(resposta) 
+}
+
+//Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXlsb2FkIjp7InBheWxvYWQiOnsicmVzZ2lzdHJvIjoxMCwibm9tZXByb2YiOiJtYXJjZWxhIiwiaWRhZGVwcm9mIjoxNiwic2FsYXJpb3Byb2YiOjEyMzQ0LCJlbWFpbCI6Im1oYS5zdXRlcmlvQGdtYWlsLmNvbSJ9LCJpYXQiOjE3MzA0NzAwMTIsImV4cCI6MTczMDU1NjQxMn0sImlhdCI6MTczMDQ4NDY3NCwiZXhwIjoxNzMwNTcxMDc0fQ.AbAF9ES8u6uLgBica-umg6k8ERITfvNcxcZbEsChtnM

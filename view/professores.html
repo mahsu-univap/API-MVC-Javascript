@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professores</title>
+</head>
+
+<body>
+    <div>
+        <input type="text" id="txtId" disabled placeholder="ID"><br>
+        <input type="text" id="txtNome" placeholder="Professor"><br>
+        <input type="text" id="txtIdade" placeholder="Idade"><br>
+        <input type="text" id="txtSalario" placeholder="Salário"><br><br>
+        <input type="text" id="txtEmail" placeholder="Email"><br>
+        <input type="password" id="txtSenha" placeholder="Senha">
+        <button id="btnNovo">Registrar</button><br>
+        <br><br><button id="btnAtualizar">Atualizar</button><br><br>
+
+    </div>
+
+    <input type="text" id="txtFiltro" placeholder="Pesquisar"><br><br>
+    <table border="1" id="tbProf">
+        <th>registro</th>
+        <th>nomeprof</th>
+        <th>idadeprof</th>
+        <th>salarioprof</th>
+        <th>email</th>
+        <th>excluir</th>
+        <th>selecionar</th>
+        <!--<th>selecionar</th>-->
+
+    </table>
+    <script src="js/validacao.js"></script>
+
+    <!--Código em js-->
+    <script>
+        const obj = validar()
+        const token = localStorage.getItem("token")
+        const uri = "/professores"
+        const txtFiltro = document.getElementById("txtFiltro")
+        const txtId = document.getElementById("txtId")
+        const txtNome = document.getElementById("txtNome")
+        const txtIdade= document.getElementById("txtIdade")
+        const txtSalario= document.getElementById("txtSalario")
+        const txtEmail= document.getElementById("txtEmail")
+        const txtSenha = document.getElementById("txtSenha")
+        const tbProf = document.getElementById("tbProf")
+        const btnNovo = document.getElementById("btnNovo")
+        const btnAtualizar = document.getElementById("btnAtualizar")
+        //pega os dados do corpo da requisisção (POST)
+        let JSON_PROFESSORES = []
+        getProfessores()
+
+        btnAtualizar.onclick = atualizar
+
+        function atualizar() {
+            const nome = txtNome.value
+            const idade = txtIdade.value
+            const salario = txtSalario.value
+            const email = txtEmail.value
+            const senha = txtSenha.value
+            const id = txtId.value
+            const novoProf = {
+                nomeprof:nome,
+                idadeprof:idade,
+                salarioprof:salario,
+                email:email,
+                senha:senha
+            }
+
+            putProfessores(novoProf, id)
+        }
+
+        btnNovo.onclick = registrar
+
+        function registrar() {
+            const nome = txtNome.value
+            const idade = txtIdade.value
+            const salario = txtSalario.value
+            const email = txtEmail.value
+            const senha = txtSenha.value
+            const novoProf = {
+                nomeprof:nome,
+                idadeprof:idade,
+                salarioprof:salario,
+                email:email,
+                senha:senha
+            }
+
+            postProfessores(novoProf)
+        }
+
+        txtFiltro.onkeyup = filtrar
+
+        function filtrar() {
+            let filtro = txtFiltro.value
+            construirTabela(filtro)
+        }
+
+        function getProfessores() {
+            const requisicao = fetch(uri, {
+                method: 'GET',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    JSON_PROFESSORES = obj.dados_lidos
+                    localStorage.setItem("token", obj.TokenJWT)
+                    construirTabela()
+                } else {
+                    alert("Erro ao encontrar professor.")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_PROFESSORES)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function postProfessores(novoProf) {
+            const jsonProf = JSON.stringify(novoProf)
+
+            const requisicao = fetch(uri, {
+                method: 'POST',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+                body: jsonProf
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    localStorage.setItem("token", obj.TokenJWT)
+                    getProfessores()
+
+                } else {
+                    alert("Erro ao registrar.")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_PROFESSORES)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function putProfessores(novoProf, id) {
+            const jsonProf = JSON.stringify(novoProf)
+            const rota = uri + "/" + id
+            const requisicao = fetch(rota, {
+                method: 'PUT',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+                body: jsonProf
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    localStorage.setItem("token", obj.TokenJWT)
+                    getProfessores()
+
+                } else {
+                    alert("Erro ao atualizar.")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_PROFESSORES)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function deleteProfessores(id) {
+
+            const rota = uri + "/" + id
+            const requisicao = fetch(rota, {
+                method: 'DELETE',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-type": "application/json",
+                    "Authorization": "Bearer " + token + ""
+                },
+
+            })
+
+            requisicao.then((response) => { return response.text(); }).then((jsonResposta) => {
+                const obj = JSON.parse(jsonResposta)
+                if (obj.status == "true") {
+                    console.log(obj.TokenJWT)
+                    localStorage.setItem("token", obj.TokenJWT)
+                    alert("Excluído com sucesso!")
+                    getProfessores()
+
+                } else {
+                    alert("Erro ao deletar. Professor em relacionamento")
+                }
+
+                console.log(jsonResposta)
+                console.log(JSON_PROFESSORES)
+            })
+            requisicao.catch((erro) => {
+                console.log(erro)
+            })
+
+
+        }
+
+        function limparTabela() {
+            let qtdlinhas = tbProf.rows.length
+            for (let i = 1; i < qtdlinhas; i++) {
+                tbProf.deleteRow(1)
+            }
+
+        }
+
+        function construirTabela(filtro) {
+            limparTabela()
+            for (let prof of JSON_PROFESSORES) {
+                if (filtro != null) {
+                    let nomeprof = prof.nomeprof.toLowerCase()
+                    filtro = filtro.toLowerCase()
+
+                    if (nomeprof.includes(filtro) == false) {
+                        continue
+                    }
+
+                }
+
+                const linha = document.createElement("tr")
+                const colunaRegistro = document.createElement("td")
+                const colunaNomeprof = document.createElement("td")
+                const colunaIdadeprof = document.createElement("td")
+                const colunaSalarioprof = document.createElement("td")
+                const colunaEmail = document.createElement("td")
+                const colunaExcluir = document.createElement("td")
+                const colunaSelecionar = document.createElement("td")
+
+                const btnExcluir = document.createElement("button")
+                btnExcluir.append(document.createTextNode("EXCLUIR"))
+                btnExcluir.onclick = function () {
+                    const id = prof.registro
+                    const confirma = confirm("ATENÇÃO! Deseja excluir? Essa ação é permanente.")
+                    if (confirma == true) {
+                        deleteProfessores(id)
+                    } else {
+                        alert('Ação interrompida.')
+                    }
+
+                }
+                const btnSelecionar = document.createElement("button")
+                btnSelecionar.append(document.createTextNode("SELECIONAR"))
+                btnSelecionar.onclick = function () {
+                    txtId.value = prof.registro
+                    txtNome.value = prof.nomeprof
+                    txtIdade.value = prof.idadeprof
+                    txtSalario.value = prof.salarioprof
+                    txtEmail.value = prof.email
+                    txtSenha.value = prof.senha
+                }
+
+
+                colunaRegistro.append(document.createTextNode(prof.registro))
+                colunaNomeprof.append(document.createTextNode(prof.nomeprof))
+                colunaIdadeprof.append(document.createTextNode(prof.idadeprof))
+                colunaSalarioprof.append(document.createTextNode(prof.salarioprof))
+                colunaEmail.append(document.createTextNode(prof.email))
+                colunaExcluir.append(btnExcluir)
+                colunaSelecionar.append(btnSelecionar)
+
+                linha.appendChild(colunaRegistro)
+                linha.appendChild(colunaNomeprof)
+                linha.appendChild(colunaIdadeprof)
+                linha.appendChild(colunaSalarioprof)
+                linha.appendChild(colunaEmail)
+                linha.appendChild(colunaExcluir)
+                linha.appendChild(colunaSelecionar)
+
+                tbProf.appendChild(linha)
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>

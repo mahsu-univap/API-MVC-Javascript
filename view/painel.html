@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-sacle=1.0">
+    <title>Painel</title>
+</head>
+
+<body>
+    <!--Criação de divs-->
+    <div id="divDadosUsuario">
+    </div>
+    <div id="divUsuario"></div><br>
+    <h3>Selecione qual aba deseja acessar: </h3>
+    <div><a href="disciplinas.html">Disciplinas</a></div>
+    <div><a href="professores.html">Professores</a></div>
+    <div><a href="disciplinasxprofessores.html">DisciplinasxProfessores</a></div>
+    <!--<div><a href="pesquisatabelas.html">Pesquisar entre as tabelas</a></div>-->
+
+    <br><h3>JSON: </h3>
+    <div><a href="disciplinasjson.html">Disciplinas.JSON</a></div>
+
+    <!--<br><h3>Disciplinas API Flask: </h3>
+    <div><a href="disciplinas.html">API Flask</a></div>-->
+    
+
+
+    <!--Código em js-->
+    <script src="js/validacao.js">
+    </script>
+
+    <script>
+    const email = validar()
+
+    const divDadosUsuario = document.getElementById("divUsuario")
+    divDadosUsuario.append(document.createTextNode("Professor conectado! Email: "+email+" ❤️"))
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disciplinas JSON</title>
+</head>
+<body>
+    <input type="file" id="txtArquivo" accept=".json">
+    <button id="btnEnviar">Enviar JSON</button>
+</body>
+<script src="js/validacao.js"></script>
+
+<script>
+    const token = localStorage.getItem("token");
+    const txtArquivo = document.getElementById("txtArquivo");
+    const btnEnviar = document.getElementById("btnEnviar");
+
+    btnEnviar.onclick = async function() {
+        if (!txtArquivo.files[0]) {
+            alert("Por favor, selecione um arquivo JSON.");
+            return;
+        }
+
+        const file = txtArquivo.files[0];
+        const uri = "/disciplinasjson";
+
+        const reader = new FileReader();
+        reader.onload = async function(event) {
+            const fileContent = event.target.result;
+
+            // Cria o FormData para enviar o arquivo
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch(uri, {
+                    method: 'POST',
+                    headers: {
+                        "Authorization": "Bearer " + token // Não é necessário Content-Type aqui
+                    },
+                    body: formData // Envia o FormData com o arquivo
+                });
+
+                if (!response.ok) {
+                    const errorResponse = await response.text();
+                    console.error("Erro de servidor:", errorResponse);
+                    throw new Error(`Erro HTTP: ${response.status}. Resposta do servidor: ${errorResponse}`);
+                }
+
+                const obj = await response.json();
+                console.log("Resposta do servidor:", obj);
+
+                if (obj.status === "true") {
+                    localStorage.setItem("token", obj.TokenJWT);
+                    alert("Cadastrado com sucesso!");
+                } else {
+                    alert("Cadastrado com sucesso!");
+                }
+            } catch (erro) {
+                console.error("Erro durante a requisição:", erro.message);
+                alert("Erro ao registrar: " + erro.message);
+            }
+        };
+
+        // Lê o arquivo JSON como texto
+        reader.readAsText(file);
+    };
+</script>
+</html>

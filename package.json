@@ -1,0 +1,24 @@
+{
+  "name": "api_javascript_2024",
+  "version": "1.0.0",
+  "description": "Documentação ",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marcela Gianini Sutério",
+  "license": "ISC",
+  "dependencies": {
+    "comment-json": "^4.2.5",
+    "csv-parser": "^3.0.0",
+    "express": "^4.21.1",
+    "json-parser": "^3.1.2",
+    "jsonwebtoken": "^9.0.2",
+    "md5": "^2.3.0",
+    "multer": "^1.4.5-lts.1",
+    "mysql": "^2.18.1"
+  }
+}
